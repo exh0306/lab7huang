@@ -49,6 +49,9 @@ public class javaSpaceGame extends JFrame implements KeyListener {
     private List<Point> obstacles;
     private BufferedImage shipImage;
     private List<Point> stars;
+    private BufferedImage spriteSheet;
+    private int spriteWidth = 100;
+    private int spriteHeight = 64;
 
 
     public javaSpaceGame() {
@@ -60,7 +63,8 @@ public class javaSpaceGame extends JFrame implements KeyListener {
         try {
             //Spaceship image
             shipImage = ImageIO.read(new File("ship.png"));
-            //put spritesheet here
+            //asteriods image
+            spriteSheet = ImageIO.read(new File("ast.png"));
         } catch (IOException ex) {
             //handle image loading error
             ex.printStackTrace();
@@ -139,9 +143,23 @@ public class javaSpaceGame extends JFrame implements KeyListener {
         }
 
         //Obstacles
-        g.setColor(Color.RED);
+        //g.setColor(Color.RED);
+        //for (Point obstacle : obstacles) {
+        //    g.fillRect(obstacle.x, obstacle.y, OBSTACLE_WIDTH, OBSTACLE_HEIGHT);
+        //}
+
         for (Point obstacle : obstacles) {
-            g.fillRect(obstacle.x, obstacle.y, OBSTACLE_WIDTH, OBSTACLE_HEIGHT);
+            if (spriteSheet != null) {
+// Randomly select a sprite index (0-3)
+                Random random = new Random();
+                int spriteIndex = random.nextInt(4);
+// Calc the x y coord of the selected sprite on the sprite sheet
+                int spriteX = spriteIndex * spriteWidth;
+                int spriteY = 0; // Assuming all sprites are in the first row
+// Draw the selected sprite onto the canvas
+                g.drawImage(spriteSheet.getSubimage(spriteX, spriteY,
+                        spriteWidth, spriteHeight), obstacle.x, obstacle.y, null);
+            }
         }
 
         if (isGameOver) {
