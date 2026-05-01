@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Random;
 import javax.imageio.ImageIO;
 import javax.sound.sampled.*;
+import java.awt.event.KeyEvent;
 
 
 public class javaSpaceGame extends JFrame implements KeyListener {
@@ -54,6 +55,17 @@ public class javaSpaceGame extends JFrame implements KeyListener {
     private int spriteWidth = 100;
     private int spriteHeight = 64;
     private Clip clip;
+    private boolean shieldActive = false;
+    private int shieldDuration = 5000; // 5 seconds
+    private long shieldStartTime;
+
+    private void activateShield() {
+        shieldActive = true;
+        shieldStartTime = System.currentTimeMillis();
+    }
+    private boolean isShieldActive() {
+        return shieldActive && (System.currentTimeMillis() - shieldStartTime) > shieldDuration;
+    }
 
 
     public javaSpaceGame() {
@@ -81,7 +93,6 @@ public class javaSpaceGame extends JFrame implements KeyListener {
         }
 
 
-
         gamePanel = new JPanel() {
             @Override
             protected void paintComponent(Graphics g) {
@@ -101,6 +112,7 @@ public class javaSpaceGame extends JFrame implements KeyListener {
         add(gamePanel);
         gamePanel.setFocusable(true);
         gamePanel.addKeyListener(this);
+        gamePanel.requestFocusInWindow();
 
         playerX = WIDTH / 2 - PLAYER_WIDTH / 2;
         playerY = HEIGHT - PLAYER_HEIGHT - 20;
@@ -177,7 +189,12 @@ public class javaSpaceGame extends JFrame implements KeyListener {
             g.setFont(new Font("Arial", Font.BOLD, 24));
             g.drawString("Game Over!", WIDTH / 2 - 80, HEIGHT / 2);
         }
+         if (isShieldActive()) {
+             g.setColor(new Color(0,255,255,100)); //Semi-transparent cyan
+             g.fillOval(playerX, playerY, 60, 60);
+         }
     }
+
 
     private List<Point> generateStars(int numStars) {
         List<Point> starsList = new ArrayList<>();
@@ -225,11 +242,19 @@ public class javaSpaceGame extends JFrame implements KeyListener {
             Rectangle playerRect = new Rectangle(playerX, playerY, PLAYER_WIDTH, PLAYER_HEIGHT);
             for (Point obstacle : obstacles) {
                 Rectangle obstacleRect = new Rectangle(obstacle.x, obstacle.y, OBSTACLE_WIDTH, OBSTACLE_HEIGHT);
-                if (playerRect.intersects(obstacleRect)) {
-                    isGameOver = true;
-                    break;
+                if (playerRect.intersects(obstacleRect) && !isShieldActive()) {
+                        isGameOver = true;
+                        break;
+                    }
+            }
+
+            if (shieldActive) {
+                long currentTime = System.currentTimeMillis();
+                if (currentTime - shieldStartTime > shieldDuration) {
+    shieldActive = false;
                 }
             }
+
 
             // Check collision with obstacle
             Rectangle projectileRect = new Rectangle(projectileX, projectileY, PROJECTILE_WIDTH, PROJECTILE_HEIGHT);
@@ -250,38 +275,42 @@ public class javaSpaceGame extends JFrame implements KeyListener {
     @Override
     public void keyPressed(KeyEvent e) {
         int keyCode = e.getKeyCode();
+
         if (keyCode == KeyEvent.VK_LEFT && playerX > 0) {
             playerX -= PLAYER_SPEED;
+
         } else if (keyCode == KeyEvent.VK_RIGHT && playerX < WIDTH - PLAYER_WIDTH) {
             playerX += PLAYER_SPEED;
-        } else if (keyCode == KeyEvent.VK_SPACE && !isFiring) {
-            isFiring = true;
 
-            //play sound
+        }
+        // shield activated
+        else if (keyCode == KeyEvent.VK_ESCAPE) {
+
+        } else if (keyCode == KeyEvent.VK_CONTROL) {
+            activateShield();
+        }
+
+            // play sound
             if (clip != null) {
-                clip.setFramePosition(0); // rewind sound
+                clip.setFramePosition(0);
                 clip.start();
             }
 
-            //shoot projectile
+            // shoot projectile
             projectileX = playerX + PLAYER_WIDTH / 2 - PROJECTILE_WIDTH / 2;
             projectileY = playerY;
             isProjectileVisible = true;
 
-
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        Thread.sleep(500); // Limit firing rate
-                        isFiring = false;
-                    } catch (InterruptedException ex) {
-                        ex.printStackTrace();
-                    }
+            new Thread(() -> {
+                try {
+                    Thread.sleep(500);
+                    isFiring = false;
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
                 }
             }).start();
         }
-    }
+
 
     @Override
     public void keyTyped(KeyEvent e) {}
