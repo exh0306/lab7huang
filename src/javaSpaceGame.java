@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import javax.imageio.ImageIO;
+import javax.sound.sampled.*;
 
 
 public class javaSpaceGame extends JFrame implements KeyListener {
@@ -27,9 +28,9 @@ public class javaSpaceGame extends JFrame implements KeyListener {
     private static final int HEIGHT = 500;
     private static final int PLAYER_WIDTH = 80;
     private static final int PLAYER_HEIGHT = 80;
-    private static final int OBSTACLE_WIDTH = 20;
-    private static final int OBSTACLE_HEIGHT = 20;
-    private static final int PROJECTILE_WIDTH = 5;
+    private static final int OBSTACLE_WIDTH = 15;
+    private static final int OBSTACLE_HEIGHT = 10;
+    private static final int PROJECTILE_WIDTH = 15;
     private static final int PROJECTILE_HEIGHT = 10;
     private static final int PLAYER_SPEED = 15;
     private static final int OBSTACLE_SPEED = 2;
@@ -52,6 +53,7 @@ public class javaSpaceGame extends JFrame implements KeyListener {
     private BufferedImage spriteSheet;
     private int spriteWidth = 100;
     private int spriteHeight = 64;
+    private Clip clip;
 
 
     public javaSpaceGame() {
@@ -63,10 +65,18 @@ public class javaSpaceGame extends JFrame implements KeyListener {
         try {
             //Spaceship image
             shipImage = ImageIO.read(new File("ship.png"));
+
             //asteriods image
             spriteSheet = ImageIO.read(new File("ast.png"));
-        } catch (IOException ex) {
-            //handle image loading error
+
+            //Audio wave sound
+            AudioInputStream audioInputStream =
+                    AudioSystem.getAudioInputStream(new File("fire_converted.wav"));
+
+            clip = AudioSystem.getClip();
+            clip.open(audioInputStream);
+
+        } catch (IOException | UnsupportedAudioFileException | LineUnavailableException ex) {
             ex.printStackTrace();
         }
 
@@ -96,7 +106,7 @@ public class javaSpaceGame extends JFrame implements KeyListener {
         playerY = HEIGHT - PLAYER_HEIGHT - 20;
         projectileX = playerX + PLAYER_WIDTH / 2 - PROJECTILE_WIDTH / 2;
         projectileY = playerY;
-        isProjectileVisible = false;
+        isProjectileVisible = true;
         isGameOver = false;
         isFiring = false;
         obstacles = new java.util.ArrayList<>();
@@ -136,7 +146,7 @@ public class javaSpaceGame extends JFrame implements KeyListener {
         //g.setColor(Color.BLUE);
         //g.fillRect(playerX, playerY, PLAYER_WIDTH, PLAYER_HEIGHT);
 
-        //Projectile
+        //Projectile (what the spaceship shoots)
         if (isProjectileVisible) {
             g.setColor(Color.GREEN);
             g.fillRect(projectileX, projectileY, PROJECTILE_WIDTH, PROJECTILE_HEIGHT);
@@ -150,13 +160,13 @@ public class javaSpaceGame extends JFrame implements KeyListener {
 
         for (Point obstacle : obstacles) {
             if (spriteSheet != null) {
-// Randomly select a sprite index (0-3)
+                //Randomly select a sprite index (0-3)
                 Random random = new Random();
                 int spriteIndex = random.nextInt(4);
-// Calc the x y coord of the selected sprite on the sprite sheet
+                // Calc the x y coord of the selected sprite on the sprite sheet
                 int spriteX = spriteIndex * spriteWidth;
                 int spriteY = 0; // Assuming all sprites are in the first row
-// Draw the selected sprite onto the canvas
+                // Draw the selected sprite onto the canvas
                 g.drawImage(spriteSheet.getSubimage(spriteX, spriteY,
                         spriteWidth, spriteHeight), obstacle.x, obstacle.y, null);
             }
@@ -246,9 +256,19 @@ public class javaSpaceGame extends JFrame implements KeyListener {
             playerX += PLAYER_SPEED;
         } else if (keyCode == KeyEvent.VK_SPACE && !isFiring) {
             isFiring = true;
+
+            //play sound
+            if (clip != null) {
+                clip.setFramePosition(0); // rewind sound
+                clip.start();
+            }
+
+            //shoot projectile
             projectileX = playerX + PLAYER_WIDTH / 2 - PROJECTILE_WIDTH / 2;
             projectileY = playerY;
             isProjectileVisible = true;
+
+
             new Thread(new Runnable() {
                 @Override
                 public void run() {
