@@ -63,6 +63,7 @@ public class javaSpaceGame extends JFrame implements KeyListener {
         shieldActive = true;
         shieldStartTime = System.currentTimeMillis();
     }
+
     private boolean isShieldActive() {
         return shieldActive && (System.currentTimeMillis() - shieldStartTime) < shieldDuration;
     }
@@ -189,10 +190,10 @@ public class javaSpaceGame extends JFrame implements KeyListener {
             g.setFont(new Font("Arial", Font.BOLD, 24));
             g.drawString("Game Over!", WIDTH / 2 - 80, HEIGHT / 2);
         }
-         if (isShieldActive()) {
-             g.setColor(new Color(0,255,255,100)); //Semi-transparent cyan
-             g.fillOval(playerX, playerY, 80, 80);
-         }
+        if (isShieldActive()) {
+            g.setColor(new Color(0, 255, 255, 100)); //Semi-transparent cyan
+            g.fillOval(playerX, playerY, 80, 80);
+        }
     }
 
 
@@ -243,15 +244,15 @@ public class javaSpaceGame extends JFrame implements KeyListener {
             for (Point obstacle : obstacles) {
                 Rectangle obstacleRect = new Rectangle(obstacle.x, obstacle.y, OBSTACLE_WIDTH, OBSTACLE_HEIGHT);
                 if (playerRect.intersects(obstacleRect) && !isShieldActive()) {
-                        isGameOver = true;
-                        break;
-                    }
+                    isGameOver = true;
+                    break;
+                }
             }
 
             if (shieldActive) {
                 long currentTime = System.currentTimeMillis();
                 if (currentTime - shieldStartTime > shieldDuration) {
-    shieldActive = false;
+                    shieldActive = false;
                 }
             }
 
@@ -274,7 +275,7 @@ public class javaSpaceGame extends JFrame implements KeyListener {
 
 
     // Reset the game
-    private void reset(){
+    private void reset() {
         score = 0;
         isGameOver = false;
         repaint();
@@ -285,22 +286,18 @@ public class javaSpaceGame extends JFrame implements KeyListener {
     public void keyPressed(KeyEvent e) {
         int keyCode = e.getKeyCode();
 
+        // Movement (independent)
         if (keyCode == KeyEvent.VK_LEFT && playerX > 0) {
             playerX -= PLAYER_SPEED;
+        }
 
-        } else if (keyCode == KeyEvent.VK_RIGHT && playerX < WIDTH - PLAYER_WIDTH) {
+        if (keyCode == KeyEvent.VK_RIGHT && playerX < WIDTH - PLAYER_WIDTH) {
             playerX += PLAYER_SPEED;
-
-        } else if (keyCode == KeyEvent.VK_ESCAPE) {
-            reset();
         }
 
-        // shield activated
-        else if (keyCode == KeyEvent.VK_ESCAPE) {
-
-        } else if (keyCode == KeyEvent.VK_CONTROL) {
-            activateShield();
-        }
+        // Shooting (ONLY when space is pressed)
+        if (keyCode == KeyEvent.VK_SPACE && !isFiring) {
+            isFiring = true;
 
             // play sound
             if (clip != null) {
@@ -322,6 +319,18 @@ public class javaSpaceGame extends JFrame implements KeyListener {
                 }
             }).start();
         }
+
+        // Shield
+        if (keyCode == KeyEvent.VK_CONTROL) {
+            activateShield();
+        }
+        //reset the game
+        if (keyCode == KeyEvent.VK_ESCAPE) {
+            reset();
+        }
+    }
+
+
 
 
     @Override
