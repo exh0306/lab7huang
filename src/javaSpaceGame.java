@@ -58,6 +58,7 @@ public class javaSpaceGame extends JFrame implements KeyListener {
     private boolean shieldActive = false;
     private int shieldDuration = 5000; // 5 seconds
     private long shieldStartTime;
+    private int playerHealth = 10;
 
     private void activateShield() {
         shieldActive = true;
@@ -176,7 +177,7 @@ public class javaSpaceGame extends JFrame implements KeyListener {
                 //Randomly select a sprite index (0-3)
                 Random random = new Random();
                 int spriteIndex = random.nextInt(4);
-                // Calc the x y coord of the selected sprite on the sprite sheet
+                // Calc the x y cord of the selected sprite on the sprite sheet
                 int spriteX = spriteIndex * spriteWidth;
                 int spriteY = 0; // Assuming all sprites are in the first row
                 // Draw the selected sprite onto the canvas
@@ -193,6 +194,10 @@ public class javaSpaceGame extends JFrame implements KeyListener {
         if (isShieldActive()) {
             g.setColor(new Color(0, 255, 255, 100)); //Semi-transparent cyan
             g.fillOval(playerX, playerY, 80, 80);
+
+            g.setColor(Color.WHITE);
+            g.setFont(new Font("Arial", Font.BOLD, 30));
+            g.drawString("Health: " + playerHealth, 10, 60); //shows player's health
         }
     }
 
@@ -243,9 +248,17 @@ public class javaSpaceGame extends JFrame implements KeyListener {
             Rectangle playerRect = new Rectangle(playerX, playerY, PLAYER_WIDTH, PLAYER_HEIGHT);
             for (Point obstacle : obstacles) {
                 Rectangle obstacleRect = new Rectangle(obstacle.x, obstacle.y, OBSTACLE_WIDTH, OBSTACLE_HEIGHT);
-                if (playerRect.intersects(obstacleRect) && !isShieldActive()) {
-                    isGameOver = true;
-                    break;
+                if (playerRect.intersects(obstacleRect)) {
+
+                    if (!shieldActive) {
+                        playerHealth--; //take damage
+                        obstacles.remove(obstacle); //remove obstacles after hit
+                        if (playerHealth <= 0) {
+                            isGameOver = true;
+                        }
+
+                        break;
+                    }
                 }
             }
 
