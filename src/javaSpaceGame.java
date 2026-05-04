@@ -59,6 +59,8 @@ public class javaSpaceGame extends JFrame implements KeyListener {
     private int shieldDuration = 5000; // 5 seconds
     private long shieldStartTime;
     private int playerHealth = 10;
+    private int gameTime = 60; //secs
+    private long lastTimeUpdate = System.currentTimeMillis();
 
     private void activateShield() {
         shieldActive = true;
@@ -206,6 +208,10 @@ public class javaSpaceGame extends JFrame implements KeyListener {
         for (Point hp : healthPowerUps) {
             g.fillOval(hp.x, hp.y, 20, 20);
         }
+
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 30));
+        g.drawString ("Time: " + gameTime, WIDTH - 150, 60);
     }
 
 
@@ -296,6 +302,14 @@ public class javaSpaceGame extends JFrame implements KeyListener {
                 }
 
                 System.out.println("PowerUps: " + healthPowerUps.size());
+
+                long currentTime = System.currentTimeMillis();
+                if (currentTime - lastTimeUpdate >= 1000) { // 1 sec passed
+                    gameTime--;
+                    lastTimeUpdate = currentTime;
+                    if (gameTime <= 0) {
+                    isGameOver = true;}
+                }
             }
 
 
@@ -321,6 +335,10 @@ public class javaSpaceGame extends JFrame implements KeyListener {
         score = 0;
         isGameOver = false;
         repaint();
+
+        gameTime = 60;
+        lastTimeUpdate = System.currentTimeMillis();
+        playerHealth = 10;
     }
 
 
