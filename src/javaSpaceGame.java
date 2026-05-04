@@ -4,8 +4,8 @@
  * Course : IST 242
  * Author: Emlety Huang
  * Date Developed: 4/28/26
- * Last Date Changed: 4/30/26
- * Revision: 4/30/26
+ * Last Date Changed: 5/3/26
+ * Revision: 5/3/26
  *
  */
 
@@ -61,6 +61,10 @@ public class javaSpaceGame extends JFrame implements KeyListener {
     private int playerHealth = 10;
     private int gameTime = 60; //secs
     private long lastTimeUpdate = System.currentTimeMillis();
+    private int level = 1;
+    private int levelScoreTarget = 100; //the score you need to move to next level
+    private int obstacleSpeed = 2;
+    private double spawnRate = 0.02;
 
     private void activateShield() {
         shieldActive = true;
@@ -211,7 +215,12 @@ public class javaSpaceGame extends JFrame implements KeyListener {
 
         g.setColor(Color.WHITE);
         g.setFont(new Font("Arial", Font.BOLD, 30));
-        g.drawString ("Time: " + gameTime, WIDTH - 150, 60);
+        g.drawString("Time: " + gameTime, WIDTH - 150, 60); //countdown timer
+
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 20));
+        g.drawString("Level: " + level, WIDTH - 30 - 100, 100);
+
     }
 
 
@@ -232,7 +241,7 @@ public class javaSpaceGame extends JFrame implements KeyListener {
         if (!isGameOver) {
             // Move obstacles
             for (int i = 0; i < obstacles.size(); i++) {
-                obstacles.get(i).y += OBSTACLE_SPEED;
+                obstacles.get(i).y += obstacleSpeed;
                 if (obstacles.get(i).y > HEIGHT) {
                     obstacles.remove(i);
                     i--;
@@ -326,6 +335,11 @@ public class javaSpaceGame extends JFrame implements KeyListener {
             }
 
             scoreLabel.setText("Score: " + score);
+
+            // LEVEL UP SYSTEM
+            if (score >= levelScoreTarget) {
+                levelUp();
+            }
         }
     }
 
@@ -339,6 +353,20 @@ public class javaSpaceGame extends JFrame implements KeyListener {
         gameTime = 60;
         lastTimeUpdate = System.currentTimeMillis();
         playerHealth = 10;
+    }
+
+    private void levelUp() {
+        level++;
+
+        // increase difficulty
+        levelScoreTarget += 100;
+        obstacleSpeed += 1;
+        spawnRate += 0.01;
+
+        // optional: reward player
+        playerHealth = Math.min(playerHealth + 2, 10);
+
+        System.out.println("Level Up! Now Level " + level);
     }
 
 
