@@ -62,7 +62,7 @@ public class javaSpaceGame extends JFrame implements KeyListener {
     private int gameTime = 60; //secs
     private long lastTimeUpdate = System.currentTimeMillis();
     private int level = 1;
-    private int levelScoreTarget = 100; //the score you need to move to next level
+    private int levelScoreTarget = 50; //the score you need to move to next level
     private int obstacleSpeed = 2;
     private double spawnRate = 0.02;
 
