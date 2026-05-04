@@ -195,9 +195,16 @@ public class javaSpaceGame extends JFrame implements KeyListener {
             g.setColor(new Color(0, 255, 255, 100)); //Semi-transparent cyan
             g.fillOval(playerX, playerY, 80, 80);
 
-            g.setColor(Color.WHITE);
-            g.setFont(new Font("Arial", Font.BOLD, 30));
-            g.drawString("Health: " + playerHealth, 10, 60); //shows player's health
+        }
+
+        g.setColor(Color.WHITE);
+        g.setFont(new Font("Arial", Font.BOLD, 30));
+        g.drawString("Health: " + playerHealth, 10, 60); //shows player's health
+
+
+        g.setColor(Color.GREEN);
+        for (Point hp : healthPowerUps) {
+            g.fillOval(hp.x, hp.y, 20, 20);
         }
     }
 
@@ -213,6 +220,7 @@ public class javaSpaceGame extends JFrame implements KeyListener {
         return starsList;
     }
 
+    private List<Point> healthPowerUps = new ArrayList<>();
 
     private void update() {
         if (!isGameOver) {
@@ -246,19 +254,25 @@ public class javaSpaceGame extends JFrame implements KeyListener {
 
             // Check collision with player
             Rectangle playerRect = new Rectangle(playerX, playerY, PLAYER_WIDTH, PLAYER_HEIGHT);
-            for (Point obstacle : obstacles) {
+
+            for (int i = 0; i < obstacles.size(); i++) {
+                Point obstacle = obstacles.get(i);
+
                 Rectangle obstacleRect = new Rectangle(obstacle.x, obstacle.y, OBSTACLE_WIDTH, OBSTACLE_HEIGHT);
+
                 if (playerRect.intersects(obstacleRect)) {
 
                     if (!shieldActive) {
-                        playerHealth--; //take damage
-                        obstacles.remove(obstacle); //remove obstacles after hit
+                        playerHealth--;
+
+                        obstacles.remove(i);
+                        i--;
+
                         if (playerHealth <= 0) {
                             isGameOver = true;
                         }
-
-                        break;
                     }
+                    break;
                 }
             }
 
@@ -267,6 +281,21 @@ public class javaSpaceGame extends JFrame implements KeyListener {
                 if (currentTime - shieldStartTime > shieldDuration) {
                     shieldActive = false;
                 }
+            }
+
+            if (Math.random() < 0.01) {  //Spawn rate
+                int x = (int) (Math.random() * (WIDTH - 20));
+                healthPowerUps.add(new Point(x, 0));
+            }
+            for (int i = 0; i < healthPowerUps.size(); i++) {
+                healthPowerUps.get(i).y += OBSTACLE_SPEED;
+
+                if (healthPowerUps.get(i).y > HEIGHT) {
+                    healthPowerUps.remove(i);
+                    i--; // adjust index after removal
+                }
+
+                System.out.println("PowerUps: " + healthPowerUps.size());
             }
 
 
